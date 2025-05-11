@@ -23,7 +23,7 @@ def load_character_data(filename: str) -> Dict[str, Any]:
 # Define request model
 class ChatRequest(BaseModel):
     question: str
-    prompt: Optional[str] = None  # Optional additional roleplay prompt
+    prompt: Optional[str] = None  # Future scope
 
 # Generate system prompt
 def generate_system_prompt(character_data: Dict[str, Any], user_prompt: Optional[str] = None) -> str:
@@ -41,10 +41,10 @@ def generate_system_prompt(character_data: Dict[str, Any], user_prompt: Optional
         prompt += f"- Your speaking volume is {speech.get('volume', 'moderate')}\n"
         
         if 'catchphrases' in speech and speech['catchphrases']:
-            prompt += "- You often use these catchphrases: " + ", ".join([f'"{phrase}"' for phrase in speech['catchphrases']]) + "\n"
+            prompt += "- You occasionally use these phrases (use sparingly, no more than once every few responses): " + ", ".join([f'"{phrase}"' for phrase in speech['catchphrases']]) + "\n"
         
         if 'filler_words' in speech and speech['filler_words']:
-            prompt += "- You frequently use these filler words: " + ", ".join([f'"{word}"' for word in speech['filler_words']]) + "\n"
+            prompt += "- You sometimes use these filler words (use sparingly): " + ", ".join([f'"{word}"' for word in speech['filler_words']]) + "\n"
     
     # quirks
     if 'quirks' in character_data and character_data['quirks']:
@@ -63,13 +63,23 @@ def generate_system_prompt(character_data: Dict[str, Any], user_prompt: Optional
     if 'ai_instruction' in character_data:
         prompt += f"\nSPECIAL INSTRUCTIONS: {character_data['ai_instruction']}\n\n"
     
-    # Add additional user prompt if provided
+    # Future scope
     if user_prompt:
         prompt += f"ADDITIONAL CONTEXT: {user_prompt}\n\n"
     
-    # Add JSON response format instructions
-    prompt += "RESPONSE FORMAT: Your responses should be in the first person, as if you are the character speaking directly. Always maintain your character's personality and speech patterns.\n"
-    prompt += "Return your response in JSON format with the following structure: {\"character_name\": \"" + character_data['name'] + "\", \"response\": \"Your in-character response here\"}"
+    # To make it human like
+    prompt += """
+IMPORTANT RESPONSE GUIDELINES:
+1. Keep your responses natural and conversational, like a real human would speak.
+2. Limit responses to 40-50 words maximum.
+3. Use catchphrases and character quirks sparingly to avoid being annoying.
+4. Respond directly to the question without unnecessary introductions.
+5. Sound natural, not like you're following a script.
+"""
+    
+    # Instructions
+    prompt += "RESPONSE FORMAT: Your responses should be in the first person, as if you are the character speaking directly. Always maintain your character's personality but speak naturally like a real human.\n"
+    prompt += "Return your response in JSON format with the following structure: {\"character_name\": \"" + character_data['name'] + "\", \"response\": \"Your concise, human-like response here\"}"
     
     return prompt
 
@@ -86,7 +96,7 @@ async def chat_aakash(request: ChatRequest):
             {"role": "user", "content": request.question},
         ],
         temperature=0.7,
-        max_completion_tokens=1024,
+        max_completion_tokens=512,
         top_p=1,
         stream=False,
         response_format={"type": "json_object"}
@@ -106,7 +116,7 @@ async def chat_ankit(request: ChatRequest):
             {"role": "user", "content": request.question},
         ],
         temperature=0.8,
-        max_completion_tokens=1024,
+        max_completion_tokens=512,
         top_p=1,
         stream=False,
         response_format={"type": "json_object"}
@@ -126,7 +136,7 @@ async def chat_aman(request: ChatRequest):
             {"role": "user", "content": request.question},
         ],
         temperature=0.9,
-        max_completion_tokens=1024,
+        max_completion_tokens=512,
         top_p=1,
         stream=False,
         response_format={"type": "json_object"}
